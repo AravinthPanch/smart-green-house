@@ -10,3 +10,5 @@ With the Smart Green Home for Students you can leave your plants alone for sever
 * Florian David Roubal
 * Martin Kessel
 * Sven Erik Jeroschewski
+
+* Initial Commit from Sven
