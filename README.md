@@ -14,6 +14,6 @@ With the Smart Green Home for Students you can leave your plants alone for sever
 
 ##Software Tools Used
 * Git Versioning - [Source Tree Gui](https://www.atlassian.com/software/sourcetree) (Windows, Mac)
-* XBee Module Firmware Configuration - [XCTU] (http://www.digi.com/support/productdetail?pid=3352&osvid=57&type=utilities) (Windows, Mac, Linux)
+* XBee Module Firmware Configuration - [XCTU](http://www.digi.com/support/productdetail?pid=3352&osvid=57&type=utilities) (Windows, Mac, Linux)
 * Arduino IDE 1.0.5
-* WaspMote IDE 
+* WaspMote IDE
