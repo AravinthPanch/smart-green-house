@@ -10,3 +10,8 @@ With the Smart Green Home for Students you can leave your plants alone for sever
 * Florian David Roubal
 * Martin Kessel
 * Sven Erik Jeroschewski
+
+
+##Software Tools Used
+* Git Versioning - [Source Tree Gui](https://www.atlassian.com/software/sourcetree) (Windows, Mac)
+* XBee Module Firmware Configuration - XCTU (Windows, Mac, Linux)
