@@ -5,11 +5,10 @@ var app = require('express.io')(),
 	request = require('request'),
 	bodyParser = require('body-parser'),
 	logger = require('log4js').getLogger(),
-	time = require('time'),
-	time_now = new time.Date(),
+	moment = require('moment'),	
 	SerialPort = require("serialport").SerialPort,
 	serialPort = new SerialPort("/dev/tty.usbmodemfd131", {
-		baudrate: 115200
+		baudrate: 38400
 	});
 
 
@@ -24,16 +23,17 @@ app.use(express.static(__dirname, '/public'));
 
 //WebRoot
 app.get('/', function(req, res) {
-	logger.info('Smart Green House UI is started');
+	logger.info('UI is started');
 });
 
 //Socket Root for Serial Port
 app.io.route('serial', function(req) {
 	serialPort.open(function() {
-		logger.info('Serial Port is opened');						
+		logger.info('Serial Port is opened');
 		serialPort.on('data', function(data) {
+			var timestamp = moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss.SSS");
 			req.io.emit('logs', {
-				message: time_now.toString() + ':' + data
+				message: '[' + timestamp.toString("%A") + '] [Serial]' + ' - ' + data
 			})
 		});
 	});
@@ -41,5 +41,6 @@ app.io.route('serial', function(req) {
 
 //Server 
 var server = app.listen(app.get('port'), function() {
-	logger.info('Smart Green House App is running on %d', app.get('port'));
+	logger.info('Server is started');
+	logger.info('Port is openened at http://localhost:%d', app.get('port'));
 });

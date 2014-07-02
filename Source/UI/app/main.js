@@ -5,6 +5,6 @@ define(function (require) {
 	io.emit('serial') 
 	io.on('logs', function(data) {
 		var template = '<p>' + data.message + '</p>';
-		$('#serialLog').append(template)
+		$('#serialLog').prepend(template)
 	})  
 });
