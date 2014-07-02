@@ -1,49 +1,102 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
-	<head>
-		<title>
-			Smart Green House
-		</title>
-		<script src="lib/jquery.js" type="text/javascript">
-</script>
-		<link href="lib/semantic/css/semantic.css" rel="stylesheet" type="text/css">
-		<link href="css/index.css" rel="stylesheet" type="text/css">
-		<script src="lib/semantic/javascript/semantic.js" type="text/javascript">
-</script>
-		<script data-main="app" src="lib/require.js" type="text/javascript">
-</script>
+<head>
+    <title>
+        Smart Green House
+    </title>
+    <script src="lib/jquery.js" type="text/javascript">
+    </script>
+    <link href="lib/jquery-ui.css" rel="stylesheet" type="text/css">
+    <script src="lib/jquery-ui.js" type="text/javascript">
+    </script>
+    <link href="lib/semantic/css/semantic.css" rel="stylesheet" type="text/css">
+    <link href="css/index.css" rel="stylesheet" type="text/css">
+    <script src="lib/semantic/javascript/semantic.js" type="text/javascript">
+    </script>
+    <script data-main="app" src="lib/require.js" type="text/javascript">
+    </script>
 
-	</head>
-	<body>
-		<div class="ui celled page grid">
-			<div class="row">
-				<div class="column">
-					<div class="ui inverted attached segment" style="background-color: #a0a0a0">
-						<h3>
-							Smart Green House
-						</h3>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="column">
-					<div class="row">
-						<div class="ui vertical menu">
-							<a class="item">Soil Moisture</a> <a class="item">Air Temperature</a> <a class="item">Humidity</a> <a class="item">Luminosity</a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="column">
-					<div class="headerbox ui inverted attached segment" style="background-color: #a0a0a0">
-						Network Console
-					</div>
-					<div class="subheaderbox ui inverted attached segment" style="background-color: #bebebe; color: black">
-						<div id="serialLog"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</body>
+</head>
+<body>
+<div class="ui celled page grid">
+    <div class="row">
+        <div class="column">
+            <div class="ui inverted attached segment" style="background-color: #a0a0a0">
+                <h3>
+                    Smart Green House
+                </h3>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="five wide column">
+            <div class="ui fluid vertical menu">
+                <a class="teal item">
+                    Soil Moisture
+                    <div id="moisture" class="ui label">1</div>
+                </a>
+                <a class="teal item">
+                    Air Temperature
+                    <div id="temperature" class="ui label">51 °C</div>
+                </a>
+                <a class="teal item">
+                    Humidity
+                    <div id="humidity" class="ui label">1</div>
+                </a>
+                <a class="teal item">
+                    Luminosity
+                    <div id="luminosity" class="ui label">1 cd</div>
+                </a>
+            </div>
+        </div>
+        <div class="six wide column">
+            <div class="ui fluid vertical menu">
+                <a class="teal item">
+                    <div id="soilrange"></div>
+                </a>
+                <a class="teal item">
+                    <div id="temperaturerange"></div>
+                </a>
+                <a class="teal item">
+                    <div id="humidityrange"></div>
+                </a>
+                <a class="teal item">
+                    <div id="luminosityrange"></div>
+                </a>
+            </div>
+        </div>
+        <div class="five wide column">
+            <div class="row">
+                <div class="ui fluid vertical menu">
+                    <a class="teal item">
+                        Number of Sensors
+                        <div id="sensor" class="ui label">1</div>
+                    </a>
+                    <a class="teal item">
+                        Number of Actuators
+                        <div id="actuator" class="ui label">1</div>
+                    </a>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 12px">
+                <div class="ui center aligned segment">
+                    <div class="ui button"><i class="large save icon"></i> Save Changes</div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="column">
+            <div class="ui inverted attached segment" style="background-color: #a0a0a0">
+                Network Console
+            </div>
+            <div class="ui inverted attached segment" style="background-color: #bebebe; color: black">
+                <div id="serialLog"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
 </html>
