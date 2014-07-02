@@ -1,0 +1,15 @@
+body {
+	color: black;
+	font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.row, .segment {
+	background-color: lightgrey;
+}
+
+#serialLog {
+	height: 350px;
+	overflow-y: scroll;
+}
