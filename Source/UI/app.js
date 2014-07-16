@@ -1,7 +1,7 @@
 require.config({
     baseUrl: 'lib',
     paths: {
-        app: '../app',
+        app: '../script',
 		socketio: '/socket.io/socket.io.js'
     }
 });
