@@ -8,11 +8,15 @@ define(function (require) {
 
         if (message.indexOf('SENSOR') >= 0) {
             message = message.match("SENSOR:(.*)")[1]
-            getSensor(message, time)
+            updateSensor(message, time)
         }
         else if (message.indexOf('ACTUATOR') >= 0) {
             message = message.match("ACTUATOR:(.*)")[1]
             console.log(message)
+        }
+        else if (message.indexOf('RANGE') >= 0) {
+            message = message.match("RANGE:(.*)")[1]
+            updateRange(message, time)
         }
     })
 
@@ -20,7 +24,7 @@ define(function (require) {
         command: 'init'
     })
 
-    function getSensor(message, time) {
+    function updateSensor(message, time) {
         var sensorType = message[0];
         var template;
         var sensorValue = message.match(":(.*)")[1];
@@ -56,7 +60,41 @@ define(function (require) {
         }
     }
 
-    function initSliders(){
+
+    function updateRange(message, time) {
+        message = message.split(":")
+        var template;
+
+        if (message.length == 8) {
+            $("#temperaturerange").slider("values", [ message[0], message[1] ])
+            $("#humidityrange").slider("values", [ message[2], message[3] ])
+            $("#luminosityrange").slider("values", [ message[4], message[5] ])
+            $("#soilrange").slider("values", [ message[6], message[7] ])
+
+            template = '<p>[' + time + '] [Sensor] Air Temperature range [ ' + message[0] + ' : ' + message[1] + ' ]</p>';
+            $('#serialLog').prepend(template)
+            template = '<p>[' + time + '] [Sensor] Humidity range [ ' + message[2] + ' : ' + message[3] + ' ]</p>';
+            $('#serialLog').prepend(template)
+            template = '<p>[' + time + '] [Sensor] Luminosity range [ ' + message[4] + ' : ' + message[5] + ' ]</p>';
+            $('#serialLog').prepend(template)
+            template = '<p>[' + time + '] [Sensor] Soil Moisture range [ ' + message[6] + ' : ' + message[7] + ' ]</p>';
+            $('#serialLog').prepend(template)
+        }
+    }
+
+    function initView() {
+        $('#saveButton').click(function () {
+            socket.emit('server', {
+                command: 'setSensorRange',
+                value: {
+                    S1: 55,
+                    S2: 65,
+                    S3: 75,
+                    S4: 85
+                }
+            })
+        })
+
         $("#soilrange").slider({
             range: true,
             min: 0,
@@ -86,7 +124,7 @@ define(function (require) {
         });
     }
 
-    initSliders()
+    initView()
 });
 
 

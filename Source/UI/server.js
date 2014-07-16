@@ -30,7 +30,11 @@ app.io.route('server', function (socket) {
         case 'init':
             initSerial(socket)
             break;
-        case 'saveRange':
+        case 'setSensorRange':
+            setSensorRange(socket.data.value)
+            break;
+        case 'getSensorRange':
+            getCurrentSensorRange()
             break;
     }
 });
@@ -77,29 +81,36 @@ function emitData(packet, socket) {
 
 
 function getCurrentData() {
-    serialPort.write("G", function (err, results) {
+    serialPort.write("S:UI:GET:DATA:E", function (err, results) {
         if (err != undefined) {
             logger.error(err)
         }
     });
 }
 
+function getCurrentSensorValue(){
+    serialPort.write("S:UI:GET:VALUE:E", function (err, results) {
+        if (err != undefined) {
+            logger.error(err)
+        }
+    });
+}
 
+function getCurrentSensorRange(){
+    serialPort.write("S:UI:GET:RANGE:E", function (err, results) {
+        if (err != undefined) {
+            logger.error(err)
+        }
+    });
+}
 
-
-
-
-
-
-
-
-
-function saveRange() {
-
-
-
-
-
+function setSensorRange(value){
+    var command = "S:UI:SET:RANGE:" + value.S1 + ':' + value.S2 + ':' + value.S3 + ':' + value.S4 + ':E'
+    serialPort.write(command, function (err, results) {
+        if (err != undefined) {
+            logger.error(err)
+        }
+    });
 }
 
 
