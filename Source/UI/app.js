@@ -2,7 +2,8 @@ require.config({
     baseUrl: 'lib',
     paths: {
         app: '../script',
-		socketio: '/socket.io/socket.io.js'
+		socketio: '/socket.io/socket.io.js',
+        moment: 'moment'
     }
 });
 
