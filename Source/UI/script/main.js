@@ -82,6 +82,8 @@ define(function (require) {
             $('#serialLog').prepend(template)
             template = '<p>[' + time + '] [Sensor] Soil Moisture range is [ ' + message[6] + ' : ' + message[7] + ' ]</p>';
             $('#serialLog').prepend(template)
+
+            updateRangeText()
         }
     }
 
@@ -121,10 +123,9 @@ define(function (require) {
                 $('#pump').text(temp)
 
             } else {
-                $('#pumpBar').parent().removeClass("active")
-                var str = $('#pump').text()
-                str = str.replace('is', 'was last')
-                $('#pump').text(str)
+
+                var temp = 'Pump was last switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + ' Seconds'
+                $('#pump').text(temp)
                 clearTimer()
             }
         }
@@ -149,10 +150,9 @@ define(function (require) {
                 $('#light').text(temp)
 
             } else {
-                $('#lightBar').parent().removeClass("active")
-                var str = $('#light').text()
-                str = str.replace('is', 'was last')
-                $('#light').text(str)
+                $('#pumpBar').parent().removeClass("active")
+                var temp = 'Light was last switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + ' Seconds'
+                $('#light').text(temp)
                 clearTimer()
             }
         }
@@ -162,7 +162,6 @@ define(function (require) {
             clearInterval(timer)
         }
     }
-
 
     function calculateBar(startTime, endTime) {
         var timeSpan = endTime - startTime
@@ -195,38 +194,77 @@ define(function (require) {
         $('#lightBar').css('width', '100%')
         $('#light').text('Light is switched on at 2014-07-20 12:14:57 for 300 Seconds')
 
-        $("#soilrange").slider({
-            range: true,
-            min: 0,
-            max: 500,
-            values: [ 0, 500 ]
-        });
-
         $("#temperaturerange").slider({
             range: true,
             min: 0,
-            max: 500,
-            values: [ 0, 500 ]
+            max: 50,
+            values: [ 0, 50 ],
+            slide: function () {
+                var temp = $('#temperaturerange').slider("values")
+                temp = "<div class='sliderText'>" + temp[0] + ' - ' + temp[1] + "</div>"
+                $("#temperaturerange .ui-slider-range").html(temp)
+            }
         });
 
         $("#humidityrange").slider({
             range: true,
-            min: 0,
-            max: 500,
-            values: [ 0, 500 ]
+            min: 20,
+            max: 90,
+            values: [ 20, 90 ],
+            slide: function () {
+                var temp = $('#humidityrange').slider("values")
+                temp = "<div class='sliderText'>" + temp[0] + ' - ' + temp[1] + "</div>"
+                $("#humidityrange .ui-slider-range").html(temp)
+            }
         });
 
         $("#luminosityrange").slider({
             range: true,
             min: 0,
-            max: 500,
-            values: [ 0, 500 ]
+            max: 40000,
+            values: [ 0, 40000 ],
+            slide: function () {
+                var temp = $('#luminosityrange').slider("values")
+                temp = "<div class='sliderText'>" + temp[0] + ' - ' + temp[1] + "</div>"
+                $("#luminosityrange .ui-slider-range").html(temp)
+            }
         });
 
+        $("#soilrange").slider({
+            range: true,
+            min: 0,
+            max: 1023,
+            values: [ 0, 1023 ],
+            slide: function () {
+                var temp = $('#soilrange').slider("values")
+                temp = "<div class='sliderText'>" + temp[0] + ' - ' + temp[1] + "</div>"
+                $("#soilrange .ui-slider-range").html(temp)
+            }
+        });
 
     }
 
+    function updateRangeText() {
+        var temp = $('#temperaturerange').slider("values")
+        temp = "<div class='sliderText'>" + temp[0] + ' - ' + temp[1] + "</div>"
+        $("#temperaturerange .ui-slider-range").html(temp)
+
+        temp = $('#humidityrange').slider("values")
+        temp = "<div class='sliderText'>" + temp[0] + ' - ' + temp[1] + "</div>"
+        $("#humidityrange .ui-slider-range").html(temp)
+
+        temp = $('#luminosityrange').slider("values")
+        temp = "<div class='sliderText'>" + temp[0] + ' - ' + temp[1] + "</div>"
+        $("#luminosityrange .ui-slider-range").html(temp)
+
+        temp = $('#soilrange').slider("values")
+        temp = "<div class='sliderText'>" + temp[0] + ' - ' + temp[1] + "</div>"
+        $("#soilrange .ui-slider-range").html(temp)
+    }
+
+
     initView()
+//    updateSliderText()
 });
 
 
