@@ -114,13 +114,17 @@ define(function (require) {
             var barSize = calculateBar(startTime, endTime)
             var timeSpan = moment(endTime).diff(moment(startTime), 'seconds')
 
-            if (barSize >= 0 && barSize <= 100) {
-                $('#pumpBar').addClass("active")
+            if (barSize >= 0 && barSize < 100) {
+                $('#pumpBar').parent().addClass("active")
                 $('#pumpBar').css('width', barSize + '%')
                 var temp = 'Pump is switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + ' Seconds'
                 $('#pump').text(temp)
+
             } else {
-                $('#pumpBar').removeClass("active")
+                $('#pumpBar').parent().removeClass("active")
+                var str = $('#pump').text()
+                str = str.replace('is', 'was last')
+                $('#pump').text(str)
                 clearTimer()
             }
         }
@@ -139,12 +143,16 @@ define(function (require) {
             var timeSpan = moment(endTime).diff(moment(startTime), 'seconds')
 
             if (barSize >= 0 && barSize <= 100) {
-                $('#lightBar').addClass("active")
+                $('#lightBar').parent().addClass("active")
                 $('#lightBar').css('width', barSize + '%')
-                var temp = 'Light is switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + 'Seconds'
+                var temp = 'Light is switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + ' Seconds'
                 $('#light').text(temp)
+
             } else {
-                $('#lightBar').removeClass("active")
+                $('#lightBar').parent().removeClass("active")
+                var str = $('#light').text()
+                str = str.replace('is', 'was last')
+                $('#light').text(str)
                 clearTimer()
             }
         }
@@ -177,32 +185,42 @@ define(function (require) {
             })
         })
 
+        $('#temperature').text('00')
+        $('#moisture').text('00')
+        $('#humidity').text('00')
+        $('#luminosity').text('00')
+
+        $('#pumpBar').css('width', '100%')
+        $('#pump').text('Pump is switched on at 2014-07-20 12:14:57 for 300 Seconds')
+        $('#lightBar').css('width', '100%')
+        $('#light').text('Light is switched on at 2014-07-20 12:14:57 for 300 Seconds')
+
         $("#soilrange").slider({
             range: true,
             min: 0,
             max: 500,
-            values: [ 75, 300 ]
+            values: [ 0, 500 ]
         });
 
         $("#temperaturerange").slider({
             range: true,
             min: 0,
             max: 500,
-            values: [ 50, 150 ]
+            values: [ 0, 500 ]
         });
 
         $("#humidityrange").slider({
             range: true,
             min: 0,
             max: 500,
-            values: [ 100, 350 ]
+            values: [ 0, 500 ]
         });
 
         $("#luminosityrange").slider({
             range: true,
             min: 0,
             max: 500,
-            values: [ 200, 400 ]
+            values: [ 0, 500 ]
         });
 
 
