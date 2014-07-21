@@ -2,43 +2,16 @@
 #include <DHT11.h>
 
 /*
- *  ------Waspmote XBee 802.15.4 Sending & Receiving Example------
- *
- *  Explanation: This example shows how to send and receive packets
- *  using Waspmote XBee 802.15.4 API
- *
- *  This code sends a packet to another node and waits for an answer from
- *  it. When the answer is received it is shown.
- *
- *  Copyright (C) 2009 Libelium Comunicaciones Distribuidas S.L.
- *  http://www.libelium.com
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 2 of the License, or
- *  (at your option) any later version.
- * 
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- * 
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *  Version:                0.2
- *  Design:                 David Gascón
- *  Implementation:    Alberto Bielsa
- */
+Sensor Node Firmware
 
+Martin Kessel (general design, logic and sensor implementation)
+Sven Jeroschewski (sending and receiving functions) 
+ 
+*/
 
-// edit by Sven 10:58 AM 07/16/14 (did not compile because the Digital_Light... was not found
- // We are using the following network adresses:
-//controller: 0x01, 0x01
-// sensor node: 0x02 0x02
-// actuator node: 0x03 0x03
 
 #define sleepTime "00:00:00:05"
+#define RECIEVERETRY 10
 
 packetXBee* paq_sent;
 int8_t state=0;
@@ -69,32 +42,25 @@ int moistVal = 0; // between 0 and 1023, the higher the value the drier
 bool fastMode = 0;
 int criticalMoistVal = 0; //sensor in water means gives sth like 350-400
 
+//counting no of previous wakeups
 int noWokenUp = 0;  
-  
+//modulo value to send for sure every x wakeups  
 int modVal = 2;  
 
 int actuator_adress;
 
-// call constructor of DHT11 class with DIGITAL1 pin
+// Create DHT11 object with DIGITAL1 pin
 DHT11 dht11(DIGITAL1);  
-
 
  //Sensor Side Messages: a= sendValues, b = receiveRange, c = requestToReturnCurrentRange, d = ReturnCurrentRange
  
 void setup()
 {
-  booting();
-}
-
-void booting()
-{
-    // Inits the XBee 802.15.4 library
+  // Inits the XBee 802.15.4 library
   xbee868.init(XBEE_868,FREQ868M,NORMAL);
   
   // Powers XBee
   xbee868.ON();
-//  xbee868.setOwnNetAddress(0x02, 0x02);
-//  xbee868.setChannel(0x0F);
 
   // Init USB
   USB.begin();
@@ -115,8 +81,8 @@ void booting()
   //Init Light sensor
   TSL2561.init(); 
   USB.println("Initialization successful!\n");
-  
 }
+
 
 void initAfterWakeup()
 {
@@ -129,15 +95,12 @@ void initAfterWakeup()
   
   // Powers XBee
   xbee868.ON();
-//  xbee868.setOwnNetAddress(0x02, 0x02);
-//  xbee868.setChannel(0x0F);
-
    
-  //Enable 3,3V Output Pin
+  //Enable 3,3V Output Pin for moisture and light sensor
   pinMode(SENS_PW_3V3,OUTPUT);
   digitalWrite(SENS_PW_3V3,HIGH);
   
-  //Enable 5V Output Pin
+  //Enable 5V Output Pin for DHT11 temperature and humidity sensor
   pinMode(SENS_PW_5V,OUTPUT);
   digitalWrite(SENS_PW_5V,HIGH);
 
@@ -288,8 +251,9 @@ void receive(){ //TODO add moist range
 		  
             int f = 0;
             //receive Range
-            if((xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'b')
+          if((xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'b')
             {
+              USB.println("Range received");
               f++;
               int i = 0;
               char* tmp;
@@ -377,7 +341,7 @@ void receive(){ //TODO add moist range
                 if(i == 0){
                  fastMode = atoi(start);
                   if(fastMode == 1){
-                    USB.print("fastmode on");
+                  USB.print("fastmode on");
                   }
                   else{
                   USB.print("fastmode off");
@@ -385,7 +349,8 @@ void receive(){ //TODO add moist range
                 }
                 else if(i == 1){
                   criticalMoistVal = atoi(start);
-                 
+				  USB.println("Critical Moisture value: ");
+				  USB.println(criticalMoistVal);
                 }
                  i++;
                  f++;
@@ -406,8 +371,7 @@ void sampleSensors()
     USB.println("Start sampling all sensors");
    
     //Get Light sensor data
-    unsigned long  Lux;
-    TSL2561.getLux();
+	TSL2561.getLux();
     light = TSL2561.calculateLux(0,0,1);
     
     //Get moisture value
@@ -430,27 +394,29 @@ void loop()
   //all values in range
   if((tempRange[0] <= temp && temp <= tempRange[1]) && (humRange[0] <= humi && humi <= humRange[1]) && (lightRange[0] <= light && light <= lightRange[1]) &&  (moistRange[0] <= moistVal && moistVal <= moistRange[1]))
   {
-       noWokenUp++;
+      noWokenUp++;
       // to send anyway after x wakeups
       if(noWokenUp % modVal == 0){
         noWokenUp = 0;     
         USB.println("Sending values(in range)");
+		//send values to control center
         sendValues(temp,humi,light,moistVal);
       }
           
   }
   else //at least 1 value not in range
   {
-    //send values to control center // int temperature,int humidity,int light, int moisture
+    //send values to control center
     noWokenUp = 0;
     USB.println("Sending values(out of range");
+	//send values to control center
     sendValues(temp,humi,light,moistVal);
   }
   
   //Try to receive command x times
-  for(int j = 0; j<15;j++){
+  for(int j = 0; j<RECIEVERETRY;j++){
     
-    USB.println("ReceiveRange");
+    USB.println("Received Message: ");
     receive();
     if(fastMode == 1) break;
     delay(500);
@@ -459,7 +425,7 @@ void loop()
    //fast Mode enabled    
   while(fastMode == 1){
      
-     USB.println("Enter fast mode");
+     USB.println("In fast mode");
      
      sampleSensors();
      
@@ -470,7 +436,6 @@ void loop()
      //send values to control center
      //sendValues(temp,humi,light,moistVal);
      delay(500);
-     //check if fastmode can be left (-> means pump off again)
      receive();
   }
   
@@ -491,5 +456,3 @@ void loop()
   }
   
 }
-
-
