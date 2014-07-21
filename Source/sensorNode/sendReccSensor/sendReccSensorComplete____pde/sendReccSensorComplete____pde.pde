@@ -10,8 +10,9 @@ Sven Jeroschewski (sending and receiving functions)
 */
 
 
-#define sleepTime "00:00:00:05"
-#define RECIEVERETRY 10
+#define sleepTime "00:00:00:10"
+#define RECIEVERETRY 15
+#define FASTMODETIMEOUT 30000
 
 packetXBee* paq_sent;
 int8_t state=0;
@@ -200,9 +201,8 @@ void sendCurrentRange(){
 
 // receiving function for the sensor (checks for messages dedicated to the sensor)
 void receive(){ //TODO add moist range
-    USB.println("Receive range");
-    
-	//checking for answers
+  USB.println("Receive range");
+    //checking for answers
     if( XBee.available() )
     {
       xbee868.treatData();
@@ -211,12 +211,11 @@ void receive(){ //TODO add moist range
         // Writing the parameters of the packet received
         while(xbee868.pos>0)
         {
-		//determine data length
-		int length = xbee868.packet_finished[xbee868.pos-1]->data_length;
+          int length = xbee868.packet_finished[xbee868.pos-1]->data_length;
           if(length != 0)
           {
 		  
-			// --- read payload with sensor ranges, debug output to the serial monitor
+			// --- read payload with sensor ranges
 			XBee.print("Data: ");                    
 			for(int f=0;f<xbee868.packet_finished[xbee868.pos-1]->data_length;f++)
 			{
@@ -225,19 +224,15 @@ void receive(){ //TODO add moist range
 			XBee.println("");
 		  
             int f = 0;
-            //first character b -> received message hase message type: receive Range
-          if((xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'b')
+            //receive Range
+            if((xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'b')
             {
-              USB.println("Range received");
               f++;
               int i = 0;
               char* tmp;
               char* start = "Hello World";
-              
-              //try to extract the integers divided by ;
-			  
-			  //receive temp range
-			  while(i < 2 && f < length)
+              //Receive Temp Range
+              while(i < 2 && f < length)
               {
                 tmp = start;
                 while((xbee868.packet_finished[xbee868.pos-1]->data[f]) != ';')
@@ -248,12 +243,11 @@ void receive(){ //TODO add moist range
                 }
                 tmp++;
                 *tmp = 0;
-				//atoi converts a string to int
                  tempRange[i] = atoi(start);
                  i++;
                  f++;
               }
-              // receive humidity range
+              // Receive Humidity Range
               i = 0;
               while(i < 2 && f < length){
                 tmp = start;
@@ -268,7 +262,7 @@ void receive(){ //TODO add moist range
                  i++;
                  f++;
               }
-              //receive Light range
+              //Receive Light Range
               i =0;
               while(i < 2 && f < length){
                 tmp = start;
@@ -283,7 +277,7 @@ void receive(){ //TODO add moist range
                  i++;
                  f++;
               }
-               //receive moisture range
+               //Receive moisture Range
               i =0;
               while(i < 2 && f < length){
                 tmp = start;
@@ -299,8 +293,8 @@ void receive(){ //TODO add moist range
                  f++;
               }    
             }
-            //first charachter h -> receive fast mode state and critical value
-            if( (xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'h') 
+            
+            if( (xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'h') //receive fast mode state and critical value
             {
                f++;
               int i = 0;
@@ -320,7 +314,7 @@ void receive(){ //TODO add moist range
                 if(i == 0){
                  fastMode = atoi(start);
                   if(fastMode == 1){
-                  USB.print("fastmode on");
+                    USB.print("fastmode on");
                   }
                   else{
                   USB.print("fastmode off");
@@ -328,8 +322,7 @@ void receive(){ //TODO add moist range
                 }
                 else if(i == 1){
                   criticalMoistVal = atoi(start);
-				  USB.println("Critical Moisture value: ");
-				  USB.println(criticalMoistVal);
+                 
                 }
                  i++;
                  f++;
@@ -349,9 +342,10 @@ void sampleSensors()
 {
     USB.println("Start sampling all sensors");
    
-    //Get Light sensor data
-	TSL2561.getLux();
-    light = TSL2561.calculateLux(0,0,1);
+    //Get Light sensor data (@@@@@@@@@@@ TODO Due to likely hardware defect in project end phase we had to stop using the light sensor @@@@@@@@@@@@@@)
+    
+    //TSL2561.getLux();
+    light = 10000;//TSL2561.calculateLux(0,0,1);
     
     //Get moisture value
     moistVal = analogRead(ANALOG1);
@@ -364,9 +358,6 @@ void sampleSensors()
 
 void loop()
 {
-  //fast mode disabled
-  
-  
   //sample all sensors
   sampleSensors();
   
@@ -387,7 +378,7 @@ void loop()
   {
     //send values to control center
     noWokenUp = 0;
-    USB.println("Sending values(out of range");
+    USB.println("Sending values(out of range)");
 	//send values to control center
     sendValues(temp,humi,light,moistVal);
   }
@@ -395,11 +386,12 @@ void loop()
   //Try to receive command x times
   for(int j = 0; j<RECIEVERETRY;j++){
     
-    USB.println("Received Message: ");
     receive();
     if(fastMode == 1) break;
     delay(500);
   }
+  
+  long timeStamp = millis();
   
    //fast Mode enabled    
   while(fastMode == 1){
@@ -408,13 +400,17 @@ void loop()
      
      sampleSensors();
      
+	 //When critical moisture value reached, send stop message to CC and Actuator
      if(moistVal <= criticalMoistVal){
        USB.println("Send stop signal");
        sendStop();
      }
-     //send values to control center
-     //sendValues(temp,humi,light,moistVal);
-     delay(500);
+	 // Leave fastmode after timeout ( to prevent deadlock in case that all stop fast mode messages get lost)
+     if(millis()-timeStamp > FASTMODETIMEOUT){
+		fastMode = 0;
+                USB.println("Leave fastmode due to timeout");
+	 }
+	 delay(500);
      receive();
   }
   
