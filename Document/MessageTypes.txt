@@ -1,0 +1,27 @@
+ //Messages: 
+ a = sendValues, // Sensor -> Control Center (sensor send current values)
+ 
+ b = sendRange, // Control Center -> Sensor (control center assigns new range to the sensor)
+ 
+ deleted c = LifeBeat Sensor (sensor gets the order to send his sensor values as form of "life beat"),
+ 
+ d = ReturnCurrentRange (Sensor -> Control), (sensor returns his current range to the controller, currently not in use)
+ 
+ e = setAction // Control Center -> Actuator (control center sets action in the actuator)
+ 
+ f = requestToReturnCurrentAction, (sensor asks actuator for current action of the actuator)
+ 
+ g = sendCurrentAction, (actuator returns his current action, currently not in use)
+ 
+ h = modFast Mode Sensor, (Controler -> Sensor) (control center turns on/off the fast mode in the sensor (on: 1/off: 0), additionaly a critical moist value is transmitted)
+ 
+ not in use anymore i = init Data to Sensor (Controler -> Sensor) (control center sends the adress of the actuator to the sensor)
+ 
+ j = fast Stop!!! (Sensor -> Actuator, Controler) (signal that the critical moist value is reached and the action should be stopped)
+ 
+ 
+ even the messages are dedicated to specific node we still use broadcast because we do not have a dynamic adressing system
+ 
+ 
+ 
+ 
