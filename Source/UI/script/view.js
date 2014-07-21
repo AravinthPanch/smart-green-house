@@ -1,5 +1,7 @@
 define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
 
+    var actuatorStartTime = 0, actuatorEndTime = 0;
+
     return {
         init: function () {
             socket = socket.connect()
@@ -176,8 +178,12 @@ define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
             var template;
             var startTime = moment(time).diff(parseInt(message[1]))
             var endTime = moment(time).add(parseInt(message[2]))
-
             var timeSpan = moment(endTime).diff(moment(startTime), 'seconds');
+
+//            if (endTime > actuatorEndTime) {
+//                actuatorStartTime = startTime
+//                actuatorEndTime = endTime
+//            }
 
             switch (actuatorType) {
                 case '1':
