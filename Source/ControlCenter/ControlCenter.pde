@@ -1,16 +1,22 @@
-/* +----------------------------------------
-   +    Networked Embedded Flower Pot - Control Center
+/* +----------------------------------------------------------------+
+   + Networked Embedded Flower Pot - Control Center
+   + 
+   + The control center is responsible for receiving the sensor data
+   + from the sensor node. With this data it calculates the uptime
+   + for the two actuators, the light and the pump. After that it
+   + delegates the sensor node to go into the fast mode to meter
+   + its sensors continuously during the pouring process. Then 
+   + the control center sends an ON-Signal to the actuator node. 
+   + The actuator node switches on the light and the pump for 
+   + the calculated time. The control center counts the same timer
+   + for generating a timeout and sends an OFF-signal to the pump. 
+   + In case there went something wrong and the actuator node could 
+   + not switch off the pump the control center sends an OFF-Signal. 
+   + If the pump is switched-off the control center delegates 
+   + the sensor node to stop the fast mode.
+   + The control center is ready for receiving the next sensor data.
    +
-   + 0. Network discovery
-   + 1. Wait for incoming sensor data
-   + 2. Calculate uptime of the actuators
-   + 3. Send ON-Signal and uptime to actuator-node
-   + 4. Start a timer with the uptime + 1s buffer as limit
-   +    and wait for the actuator to response with OFF-Signal
-   + 5. Back to 1.
-   +      If: the OFF-Signal not arrives send the emergency stop
-   +
-   +    Last update: 16.07.14 - 15:11
+   +-----------------------------------------------------------------+
 */
 
 
@@ -22,6 +28,7 @@ packetXBee* paq_sent;
 char* data = "jkjhljhjhlhjgl";
 long currentIter = 0;
 long valveStop = 0; // Valve Timer for counting in valveTimer();
+long timeStamp = 0;
 int receivedFrom = 0; // 1 = SensorNode; 2 = ActuatorNode
 int needWater = 0; // 0 = don't need water; 1 = need Water
 bool actionOn = false;
@@ -50,9 +57,6 @@ int lightTimeout = 5;
 // --- User Interface Inputs
 int targetMoist = 0;
 bool rangesChanged = true;
-
-// Sleep
-//#define sleepTime "00:00:00:08"
  
 // --- Fast mode 
 int criticalMoistValue = 0;
@@ -137,8 +141,6 @@ int sendAction(int actionType, int criticalMoistValue){
     xbee868.setDestinationParams(paq_sent, "0013A2004078407E", data, MAC_TYPE, DATA_ABSOLUTE);
   }
   actionType = 0;
-  
-  
   
   xbee868.sendXBee(paq_sent);
   
@@ -259,27 +261,6 @@ int stopFastMode(){
                   
                   }
 
-//modify fast mode
-/*
-void modFastMode(int fastMode, int criticalMoistValue){
-        initXbeePacket();
-	
-	//data = "b;1;45;20;80;0;10000";
-        sprintf(data, "h%d;%d;", fastMode, criticalMoistValue);
-	xbee868.setDestinationParams(paq_sent, "0013A2004078408E", data, MAC_TYPE, DATA_ABSOLUTE);
-	xbee868.sendXBee(paq_sent);
-	
-	if( !xbee868.error_TX ) {
-	  XBee.println("Control Center: Fast mode sent.");
-	}
-	else {
-	  XBee.println("Control Sender: Error while sending fast mode.");
-	}
-	free(paq_sent);
-	paq_sent = NULL;
-  
-}*/
-
 // --- Wait for incoming packet
 void receivePacket() {
 
@@ -335,8 +316,6 @@ void receivePacket() {
                                                                 j=0;
                                                         }
                                                 }
-                                                //char* UIdata = "";
-                                                //sprintf(UIdata, "S:CC:SENSOR:1:%d:E", sensorValueArr[0]);
                                                   
                                                
                                         }
@@ -344,9 +323,7 @@ void receivePacket() {
                                         // --- emergency stop message
                                         if(xbee868.packet_finished[xbee868.pos-1]->data[0] == 'j') {
                                           
-                                          XBee.println("Notaus received.");
-                                          //stopPump();
-                                          //stopFastMode();
+                                          XBee.println("Emergency stop received.");
                                         
                                         }
                                         
@@ -375,25 +352,7 @@ int calcUptime() {
                 XBee.print("Sensor value: "); XBee.print(i); XBee.print(": ");
                 XBee.println(sensorValueArr[i]);
         }
-        /*
-        temp = sensorValueArr[0];
-        humi = sensorValueArr[1];
-        light = sensorValueArr[2];
-        moistVal = sensorValueArr[3];
-        */
-        
-        
-        
-        
-        XBee.print("temp before: "); XBee.println(sensorValueArr[0]);
-        XBee.print("humi before: "); XBee.println(sensorValueArr[1]);
-        XBee.print("light before: "); XBee.println(sensorValueArr[2]);
-        XBee.print("moistVal before: "); XBee.println(sensorValueArr[3]);
-        
-        
-        
-        
-        
+
         valveValue = 1;
         lightValue = 1;
         
@@ -422,10 +381,6 @@ int calcUptime() {
           needWater = 1;
         }
         
-        
-        
-        //if(moistVal > 900) { needWater = 1; }
-        
         XBee.print("Timeout: ");
         XBee.println(valveTimeout);
         XBee.print("Need water: ");
@@ -433,14 +388,10 @@ int calcUptime() {
         return needWater;
 }
 
-// --- Send ON-Signal and uptime to actuator
 
-// --- Start timer with the uptime + 1s buffer as limit
+// --- Start timer with the uptime buffer as limit
 bool valveTimer() {
   
-      /*XBee.print(valveTimeout);
-      XBee.print(" seconds valve timer counting...");
-      */
       bool timerExp = false;
       
       valveStop = millis();
@@ -448,40 +399,55 @@ bool valveTimer() {
       
               timerExp = true;
       }
-      
-      
-      
       return timerExp;
-     
-
 }
 
 void print2UI(){
 
-        USB.print("S:CC:SENSOR:1:");
-        USB.print(sensorValueArr[0]);
-        USB.print(":E");
-        
-        USB.print("S:CC:SENSOR:2:");
-        USB.print(sensorValueArr[1]);
-        USB.print(":E");
-        
-        USB.print("S:CC:SENSOR:3:");
-        USB.print(sensorValueArr[2]);
-        USB.print(":E");
-        
-        USB.print("S:CC:SENSOR:4:");
-        USB.print(sensorValueArr[3]);
-        USB.print(":E");
-        
-        
+  // --- SENSOR
+  for(int i=0; i <= 3; i++) {
+    sprintf(data, "S:CC:SENSOR:%d:%d:E", i+1, sensorValueArr[i]);
+	USB.println(data);
+	delay(100);
+  }
+
+  // --- RANGE
+  USB.print("S:CC:RANGE:");
+  USB.print(tempRange[0]);
+  USB.print(":");
+  USB.print(tempRange[1]);
+  USB.print(":");
+  USB.print(humRange[0]);
+  USB.print(":");
+  USB.print(humRange[1]);
+  USB.print(":");
+  USB.print(lightRange[0]);
+  USB.print(":");
+  USB.print(lightRange[1]);
+  USB.print(":");
+  USB.print(moistRange[0]);
+  USB.print(":");
+  USB.print(moistRange[1]);
+  USB.println(":E");
+   
 }
 
+void print2UIactuator() {
 
- 
-              
-              
-
+    // --- ACTUATOR (Pump)
+  USB.print("S:CC:ACTUATOR:1:");
+  USB.print(millis()-timeStamp); // timeStamp needs to be global now
+  USB.print(":");
+  USB.print(valveTimeout*1000); 
+  USB.println(":E");
+  
+  // --- ACTUATOR (Light)
+  USB.print("S:CC:ACTUATOR:2:");
+  USB.print(millis()-timeStamp); // timeStamp needs to be global now
+  USB.print(":");
+  USB.print(lightTimeout*1000); 
+  USB.println(":E"); 
+}
 
 void loop() {
 
@@ -509,9 +475,6 @@ void loop() {
                  
                 
                   if(ret == 1){ // fastmode probably not active
-                    //go back to start
-                   // int ret = 0;
-                    //ret = stopFastMode();
                     
                   }
                   else{// fastmode probably active
@@ -525,18 +488,27 @@ void loop() {
                     else{ // pump probably active
                     
                    
-                      long timeStamp = millis();
+                      timeStamp = millis();
+                      long currentTime = 0;
+                      int timegap = 2000;
                         
                       while( actionOn == true && (millis()-timeStamp) < valveTimeout*1000 ){
                       
                          receivePacket();
+                         
+                            if(millis()-timeStamp > timegap) {
+                               print2UIactuator();
+                               timegap += 2000;
+                            }
+                         }                        
+                         
                       }
                       stopPump(); //timeout exp
                       stopFastMode();
                     }
                   }
               } 
-          }
+          
           
         receivedFrom = 0;
 }
