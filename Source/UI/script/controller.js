@@ -1,6 +1,10 @@
 define(['socketio', 'app/view'], function (socket, view) {
     socket = socket.connect()
 
+    socket.on('portList', function(data){
+        view.updateSerialPorts(data.ports)
+    })
+
     socket.on('client', function (socket) {
         var message = socket.data.packet
         var time = socket.data.time

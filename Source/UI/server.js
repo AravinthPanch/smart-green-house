@@ -1,16 +1,10 @@
 var app = require('express.io')(),
     express = require('express'),
     http = require('http'),
-    fs = require('fs'),
-    request = require('request'),
-    bodyParser = require('body-parser'),
     logger = require('log4js').getLogger(),
     moment = require('moment'),
-    SerialPort = require("serialport").SerialPort,
-    serialPort = new SerialPort("/dev/tty.usbmodemfd131", {
-        baudrate: 38400
-    });
-
+    SerialPort = require("serialport"),
+    serialPort;
 
 // App config
 app.http().io()
@@ -18,23 +12,33 @@ app.set('port', process.env.PORT || 3000);
 app.use(express.static(__dirname, '/public'));
 
 
-//WebRoot
-app.get('/', function (req, res) {
-    logger.info('UI is started');
-});
-
-
 //Socket Root for Serial Port
 app.io.route('server', function (socket) {
     switch (socket.data.command) {
         case 'init':
-            initSerial(socket)
+            listSerialPorts(socket)
+            break;
+        case 'serialSet':
+            initSerial(socket, socket.data.port)
+            break;
+        case 'getCurrentData':
+            getCurrentData()
             break;
         case 'setSensorRange':
             setSensorRange(socket.data.value)
             break;
     }
 });
+
+
+function listSerialPorts(socket) {
+    SerialPort.list(function (err, ports) {
+        socket.io.emit('portList', {
+            ports: ports
+        })
+    });
+}
+
 
 //Server
 var server = app.listen(app.get('port'), function () {
@@ -43,25 +47,29 @@ var server = app.listen(app.get('port'), function () {
 });
 
 
-function initSerial(socket) {
+function initSerial(socket, port) {
+    SerialPort = SerialPort.SerialPort
+    serialPort = new SerialPort(port, {
+        baudrate: 38400
+    })
+
     serialPort.open(function () {
         logger.info('Serial Port is opened');
 
         var buffer = '';
         serialPort.on('data', function (data) {
+//            console.log(data.toString())
             buffer += data.toString();
 
             if (buffer.indexOf('S:') >= 0 && buffer.indexOf(':E') >= 0) {
                 buffer = buffer.match("S:CC:(.*?):E")
                 logger.debug('CC to UI : ' + buffer[0])
-                if(buffer[1] != null){
+                if (buffer[1] != null) {
                     emitData(buffer[1], socket)
                 }
                 buffer = ''
             }
         });
-
-        getCurrentData();
     });
 }
 
@@ -82,13 +90,14 @@ function emitData(packet, socket) {
 
 function getCurrentData() {
     serialPort.write("S:UI:GET:DATA:E", function (err, results) {
+        logger.debug("UI to CC : S:UI:GET:DATA:E")
         if (err != undefined) {
             logger.error(err)
         }
     });
 }
 
-function setSensorRange(value){
+function setSensorRange(value) {
     var command = "S:UI:SET:RANGE:" +
         value.S1[0] + ':' + value.S1[1] + ':' +
         value.S2[0] + ':' + value.S2[1] + ':' +
