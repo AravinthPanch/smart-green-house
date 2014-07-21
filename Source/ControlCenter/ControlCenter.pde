@@ -242,7 +242,7 @@ int stopFastMode(){
                             for(int retries = 0; retries <= NOSENDRETRIES; retries++) {
                               XBee.println("Trying again... ");
                               delay(DELAY);
-                              sendingStatus = sendAction(3, 0);
+                              sendingStatus = sendAction(4, 0);
                               if(sendingStatus == 0 ) {
                                 actionOn = false;
                                 xbee868.flush();
