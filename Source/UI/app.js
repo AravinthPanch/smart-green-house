@@ -7,4 +7,4 @@ require.config({
     }
 });
 
-require(['app/main']);
+require(['app/controller']);

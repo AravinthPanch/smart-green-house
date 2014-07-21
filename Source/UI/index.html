@@ -67,25 +67,14 @@
             </div>
         </div>
         <div class="five wide column">
+            <div class="row" style="margin-bottom: 12px">
+                <div id="saveButton" class="ui medium button">Save Changes <i class="save icon"></i></div>
+            </div>
             <div class="row">
-                <div class="ui fluid vertical menu">
-                    <a class="teal item">
-                        Number of Sensors
-                        <div id="sensor" class="ui label">1</div>
-                    </a>
-                    <a class="teal item">
-                        Number of Actuators
-                        <div id="actuator" class="ui label">1</div>
-                    </a>
-                </div>
+                <select name="serialList" id="serialPortList" style="width: 320px">
+                    <option value='title' selected="selected">Select Serial Port</option>
+                </select>
             </div>
-            <div class="row" style="margin-top: 12px">
-                <div class="ui center aligned segment">
-                    <div id="saveButton" class="ui button"><i class="large save icon"></i> Save Changes</div>
-                </div>
-
-            </div>
-
         </div>
     </div>
     <div class="row">

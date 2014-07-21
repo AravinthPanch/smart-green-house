@@ -1,4 +1,4 @@
-define(['socketio', 'moment', 'app/util', 'app/main'], function (socket, moment, util, main) {
+define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
 
     return {
         init: function () {
@@ -7,6 +7,25 @@ define(['socketio', 'moment', 'app/util', 'app/main'], function (socket, moment,
             this.initSensorValues()
             this.initProgBar()
             this.initSliders()
+            this.initSerialPortList()
+
+        },
+
+        initSerialPortList: function () {
+            $("#serialPortList").selectmenu();
+            $("#serialPortList").on("selectmenuchange", function (event, ui) {
+                if (ui.item.value != 'title') {
+                    socket.emit('server', {
+                        command: 'serialSet',
+                        port: ui.item.label
+                    })
+                    setTimeout(function () {
+                        socket.emit('server', {
+                            command: 'getCurrentData'
+                        })
+                    }, 2000)
+                }
+            });
         },
 
         initSaveButton: function () {
@@ -87,12 +106,12 @@ define(['socketio', 'moment', 'app/util', 'app/main'], function (socket, moment,
             });
         },
 
-        calculateBar: function (startTime, endTime) {
-            var timeSpan = endTime - startTime
-            var currentTime = Date.now()
-            var completedTime = moment(currentTime).diff(startTime)
-            var barSize = (completedTime / timeSpan) * 100
-            return barSize
+        updateSerialPorts: function (ports) {
+            var template = ''
+            $.each(ports, function (key, value) {
+                template = '<option>' + value.comName + '</option>'
+                $('#serialPortList').append(template)
+            })
         },
 
         updateSensor: function (message, time) {
@@ -189,7 +208,7 @@ define(['socketio', 'moment', 'app/util', 'app/main'], function (socket, moment,
                     $('#pump').text(temp)
 
                 } else {
-
+                    $('#pumpBar').parent().removeClass("active")
                     var temp = 'Pump was last switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + ' Seconds'
                     $('#pump').text(temp)
                     clearTimer()
@@ -216,7 +235,7 @@ define(['socketio', 'moment', 'app/util', 'app/main'], function (socket, moment,
                     $('#light').text(temp)
 
                 } else {
-                    $('#pumpBar').parent().removeClass("active")
+                    $('#lightBar').parent().removeClass("active")
                     var temp = 'Light was last switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + ' Seconds'
                     $('#light').text(temp)
                     clearTimer()
