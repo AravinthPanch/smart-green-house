@@ -5,7 +5,7 @@ void setup() {
 
 void loop() {
   writeMock();
-//readMock();
+  //readMock();
 }
 
 void writeMock(){
@@ -21,6 +21,8 @@ void writeMock(){
       delay(1000);
       //Light
       Serial.write("S:CC:ACTUATOR:2:2005:9000:E");
+      delay(1000);
+      Serial.write("S:CC:ACTUATOR:1:4005:9000:E");
       delay(1000);
       //Temperature 0:50 Range
       Serial.write("S:CC:SENSOR:1:15:E");  
@@ -83,6 +85,7 @@ void readMock(){
   Serial.write("S:CC:RANGE:50:300:100:400:200:450:300:390:E");
   delay(2000);
 }
+
 
 
 

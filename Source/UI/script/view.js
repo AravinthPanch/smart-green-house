@@ -177,7 +177,8 @@ define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
             var actuatorType = message[0];
             var template;
             var startTime = moment(time).diff(parseInt(message[1]))
-            var endTime = moment(time).add(parseInt(message[2]))
+            var endTime = moment(startTime).add(parseInt(message[2]))
+
             var timeSpan = moment(endTime).diff(moment(startTime), 'seconds');
 
 //            if (endTime > actuatorEndTime) {
