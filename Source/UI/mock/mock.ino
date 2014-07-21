@@ -5,7 +5,7 @@ void setup() {
 
 void loop() {
   writeMock();
-  //  readMock();
+//readMock();
 }
 
 void writeMock(){
@@ -13,27 +13,36 @@ void writeMock(){
     String str = Serial.readString();
 
     if(str == "S:UI:GET:DATA:E"){
-      Serial.write("S:CC:RANGE:15:30:400:600:30:50:20000:30000:E");
+      //Temperature:Humidity:Luminosity:SoilMoisture
+      Serial.write("S:CC:RANGE:15:30:30:50:20000:30000:400:600:E");
       delay(1000);      
-      Serial.write("S:CC:ACTUATOR:1:1405855800000:1405855920000:E");
+      //Pump
+      Serial.write("S:CC:ACTUATOR:1:1405874760000:1405875000000:E");
       delay(1000);
-      Serial.write("S:CC:ACTUATOR:2:1405855800000:1405855980000:E");
+      //Light
+      Serial.write("S:CC:ACTUATOR:2:1405874760000:1405875000000:E");
       delay(1000);
+      //Temperature 0:50 Range
       Serial.write("S:CC:SENSOR:1:15:E");  
-      delay(1000);      
-      Serial.write("S:CC:SENSOR:2:400:E");  
-      delay(1000);      
-      Serial.write("S:CC:SENSOR:3:30:E");
-      delay(1000);      
-      Serial.write("S:CC:SENSOR:4:20000:E");
+      delay(1000); 
+      //Humidity 20:90 Range
+      Serial.write("S:CC:SENSOR:2:30:E");
       delay(1000);
+      //Luminosity 0:40000 Range
+      Serial.write("S:CC:SENSOR:3:20000:E");
+      delay(1000);
+      //SoilMoisture 0:1023 Range           
+      Serial.write("S:CC:SENSOR:4:400:E");  
+      delay(1000);      
+
       Serial.write("S:CC:SENSOR:1:30:E");  
       delay(1000);      
-      Serial.write("S:CC:SENSOR:2:600:E");  
+      Serial.write("S:CC:SENSOR:2:50:E");
       delay(1000);      
-      Serial.write("S:CC:SENSOR:3:50:E");
+      Serial.write("S:CC:SENSOR:3:30000:E");   
       delay(1000);      
-      Serial.write("S:CC:SENSOR:4:30000:E");      
+      Serial.write("S:CC:SENSOR:4:600:E");  
+
     }
 
     else if(str.indexOf("S:UI:SET:RANGE:") > -1){
@@ -74,6 +83,13 @@ void readMock(){
   Serial.write("S:CC:RANGE:50:300:100:400:200:450:300:390:E");
   delay(2000);
 }
+
+
+
+
+
+
+
 
 
 

@@ -8,7 +8,6 @@ define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
             this.initProgBar()
             this.initSliders()
             this.initSerialPortList()
-
         },
 
         initSerialPortList: function () {

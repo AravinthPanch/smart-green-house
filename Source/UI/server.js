@@ -32,6 +32,7 @@ app.io.route('server', function (socket) {
 
 
 function listSerialPorts(socket) {
+    logger.info('List of Serial Ports are retrieved');
     SerialPort.list(function (err, ports) {
         socket.io.emit('portList', {
             ports: ports
