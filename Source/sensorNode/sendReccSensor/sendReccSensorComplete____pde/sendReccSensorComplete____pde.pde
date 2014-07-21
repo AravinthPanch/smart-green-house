@@ -42,7 +42,7 @@ int moistVal = 0; // between 0 and 1023, the higher the value the drier
 bool fastMode = 0;
 int criticalMoistVal = 0; //sensor in water means gives sth like 350-400
 
-//counting no of previous wakeups
+//counting number of previous wakeups till the last sendValues message was sent
 int noWokenUp = 0;  
 //modulo value to send for sure every x wakeups  
 int modVal = 2;  
@@ -112,34 +112,30 @@ void initAfterWakeup()
   USB.println("Initialization successful!\n");
 }
 
+//sends the current values to the control center
 void sendValues(int temperature,int humidity,int light, int soil_moisture){
    // Set params to send
   paq_sent=(packetXBee*) calloc(1,sizeof(packetXBee)); 
   paq_sent->mode=BROADCAST;
-  // known net address (0 unknown)
- // paq_sent->MY_known=1;
-  // set destination: control center
- // paq_sent->naD[0] = 0x01;
- // paq_sent->nad[1] = 0x01;
   
   // 16b Adresse (and not 64b)
   paq_sent->address_type=0;
   
-  //TODO set packetID for duplicate packet detection
-  paq_sent->packetID=0x52;
+  
+  //paq_sent->packetID=0x52;
   paq_sent->opt=0; 
   
-  //MAC Mode:   0 - DigiMode + 802.15.4
-  //            1 - 802.15.4 without ACKs
-  //            2 - 802.15.4 according to the standard
-  //            3 - DigiMode + 802.15.4 without ACKs
-//  xbee868.setMacMode(2);
-
+   //create string for sending
   sprintf(data, "a%d;%d;%d;%d;", temperature, humidity, light, soil_moisture);  
+  
   xbee868.hops=0;
   xbee868.setOriginParams(paq_sent, "0202", MY_TYPE);
+  
+  //set broadcast adress as destination
   xbee868.setDestinationParams(paq_sent, "FFFF", data, MY_TYPE, DATA_ABSOLUTE);
+  
   xbee868.sendXBee(paq_sent);
+  //first error detetection
   if( !xbee868.error_TX )
   {
     XBee.println("\nSensor Node: Values sent sucessfully.");
@@ -149,29 +145,19 @@ void sendValues(int temperature,int humidity,int light, int soil_moisture){
  
 }
 
+// sends the stop signal as broadcast 
 void sendStop(){
    // Set params to send
   paq_sent=(packetXBee*) calloc(1,sizeof(packetXBee)); 
   paq_sent->mode=BROADCAST;
-  // known net address (0 unknown)
- // paq_sent->MY_known=1;
-  // set destination: control center
- // paq_sent->naD[0] = 0x01;
- // paq_sent->nad[1] = 0x01;
   
   // 16b Adresse (and not 64b)
   paq_sent->address_type=0;
   
-  //TODO set packetID for duplicate packet detection
-  paq_sent->packetID=0x52;
+  
+  //paq_sent->packetID=0x52;
   paq_sent->opt=0; 
   
-  //MAC Mode:   0 - DigiMode + 802.15.4
-  //            1 - 802.15.4 without ACKs
-  //            2 - 802.15.4 according to the standard
-  //            3 - DigiMode + 802.15.4 without ACKs
-//  xbee868.setMacMode(2);
-
   sprintf(data, "j");  
   xbee868.hops=0;
   xbee868.setOriginParams(paq_sent, "0202", MY_TYPE);
@@ -185,36 +171,23 @@ void sendStop(){
   paq_sent=NULL;
 }
 
-
+// sends the current range of sensor node (currently not in use)
 void sendCurrentRange(){
    USB.println("Send range");
         
   // Set params to send
   paq_sent=(packetXBee*) calloc(1,sizeof(packetXBee)); 
-  paq_sent->mode=UNICAST;
-  // known net address (0 unknown)
- // paq_sent->MY_known=1;
-  // set destination: control center
- // paq_sent->naD[0] = 0x01;
- // paq_sent->nad[1] = 0x01;
+  paq_sent->mode=BROADCAST;
   
   // 16b Adresse (and not 64b)
   paq_sent->address_type=0;
   
-  //TODO set packetID for duplicate packet detection
-  paq_sent->packetID=0x52;
   paq_sent->opt=0; 
   
-  //MAC Mode:   0 - DigiMode + 802.15.4
-  //            1 - 802.15.4 without ACKs
-  //            2 - 802.15.4 according to the standard
-  //            3 - DigiMode + 802.15.4 without ACKs
-  //xbee868.setMacMode(2);
-
   sprintf(data, "d%d;%d;%d;%d;%d;%d;%d;%d", tempRange[0], tempRange[1], humRange[0], humRange[1], lightRange[0], lightRange[1],moistRange[0],moistRange[1]);  
   xbee868.hops=0;
   xbee868.setOriginParams(paq_sent, "0202", MY_TYPE);
-  xbee868.setDestinationParams(paq_sent, "0101", data, MY_TYPE, DATA_ABSOLUTE);
+  xbee868.setDestinationParams(paq_sent, "FFFF", data, MY_TYPE, DATA_ABSOLUTE);
   xbee868.sendXBee(paq_sent);
   if( !xbee868.error_TX )
   {
@@ -225,10 +198,11 @@ void sendCurrentRange(){
  
 }
 
-
+// receiving function for the sensor (checks for messages dedicated to the sensor)
 void receive(){ //TODO add moist range
     USB.println("Receive range");
-    //checking for answers
+    
+	//checking for answers
     if( XBee.available() )
     {
       xbee868.treatData();
@@ -237,11 +211,12 @@ void receive(){ //TODO add moist range
         // Writing the parameters of the packet received
         while(xbee868.pos>0)
         {
-          int length = xbee868.packet_finished[xbee868.pos-1]->data_length;
+		//determine data length
+		int length = xbee868.packet_finished[xbee868.pos-1]->data_length;
           if(length != 0)
           {
 		  
-			// --- read payload with sensor ranges
+			// --- read payload with sensor ranges, debug output to the serial monitor
 			XBee.print("Data: ");                    
 			for(int f=0;f<xbee868.packet_finished[xbee868.pos-1]->data_length;f++)
 			{
@@ -250,7 +225,7 @@ void receive(){ //TODO add moist range
 			XBee.println("");
 		  
             int f = 0;
-            //receive Range
+            //first character b -> received message hase message type: receive Range
           if((xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'b')
             {
               USB.println("Range received");
@@ -258,8 +233,11 @@ void receive(){ //TODO add moist range
               int i = 0;
               char* tmp;
               char* start = "Hello World";
-              //Receive Temp Range
-              while(i < 2 && f < length)
+              
+              //try to extract the integers divided by ;
+			  
+			  //receive temp range
+			  while(i < 2 && f < length)
               {
                 tmp = start;
                 while((xbee868.packet_finished[xbee868.pos-1]->data[f]) != ';')
@@ -270,11 +248,12 @@ void receive(){ //TODO add moist range
                 }
                 tmp++;
                 *tmp = 0;
+				//atoi converts a string to int
                  tempRange[i] = atoi(start);
                  i++;
                  f++;
               }
-              // Receive Humidity Range
+              // receive humidity range
               i = 0;
               while(i < 2 && f < length){
                 tmp = start;
@@ -289,7 +268,7 @@ void receive(){ //TODO add moist range
                  i++;
                  f++;
               }
-              //Receive Light Range
+              //receive Light range
               i =0;
               while(i < 2 && f < length){
                 tmp = start;
@@ -304,7 +283,7 @@ void receive(){ //TODO add moist range
                  i++;
                  f++;
               }
-               //Receive moisture Range
+               //receive moisture range
               i =0;
               while(i < 2 && f < length){
                 tmp = start;
@@ -320,8 +299,8 @@ void receive(){ //TODO add moist range
                  f++;
               }    
             }
-            
-            if( (xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'h') //receive fast mode state and critical value
+            //first charachter h -> receive fast mode state and critical value
+            if( (xbee868.packet_finished[xbee868.pos-1]->data[f]) == 'h') 
             {
                f++;
               int i = 0;
