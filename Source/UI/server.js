@@ -59,15 +59,22 @@ function initSerial(socket, port) {
 
         var buffer = '';
         serialPort.on('data', function (data) {
-//            console.log(data.toString())
+            logger.error(data.toString())
             buffer += data.toString();
 
             if (buffer.indexOf('S:') >= 0 && buffer.indexOf(':E') >= 0) {
                 buffer = buffer.match("S:CC:(.*?):E")
-                logger.debug('CC to UI : ' + buffer[0])
-                if (buffer[1] != null) {
-                    emitData(buffer[1], socket)
+
+                if (buffer != null) {
+                    if (buffer[0] != null) {
+                        logger.debug('CC to UI : ' + buffer[0])
+                    }
+
+                    if (buffer[1] != null) {
+                        emitData(buffer[1], socket)
+                    }
                 }
+
                 buffer = ''
             }
         });
