@@ -1,5 +1,7 @@
 define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
 
+    var actuatorStartTime = 0, actuatorEndTime = 0;
+
     return {
         init: function () {
             socket = socket.connect()
@@ -174,9 +176,15 @@ define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
         updateActuator: function (message, time) {
             var actuatorType = message[0];
             var template;
-            var startTime = parseInt(message[1])
-            var endTime = parseInt(message[2])
-            var timeSpan = moment(endTime).diff(moment(startTime), 'seconds')
+            var startTime = moment(time).diff(parseInt(message[1]))
+            var endTime = moment(startTime).add(parseInt(message[2]))
+
+            var timeSpan = moment(endTime).diff(moment(startTime), 'seconds');
+
+//            if (endTime > actuatorEndTime) {
+//                actuatorStartTime = startTime
+//                actuatorEndTime = endTime
+//            }
 
             switch (actuatorType) {
                 case '1':
@@ -200,7 +208,10 @@ define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
                 var barSize = util.calculateBar(startTime, endTime)
                 var timeSpan = moment(endTime).diff(moment(startTime), 'seconds')
 
-                if (barSize >= 0 && barSize < 100) {
+                if (barSize >= 0 && barSize < 101) {
+                    if (barSize > 100) {
+                        barSize = 100
+                    }
                     $('#pumpBar').parent().addClass("active")
                     $('#pumpBar').css('width', barSize + '%')
                     var temp = 'Pump is switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + ' Seconds'
@@ -227,7 +238,10 @@ define(['socketio', 'moment', 'app/util'], function (socket, moment, util) {
                 var barSize = util.calculateBar(startTime, endTime)
                 var timeSpan = moment(endTime).diff(moment(startTime), 'seconds')
 
-                if (barSize >= 0 && barSize <= 100) {
+                if (barSize >= 0 && barSize < 101) {
+                    if (barSize > 100) {
+                        barSize = 100
+                    }
                     $('#lightBar').parent().addClass("active")
                     $('#lightBar').css('width', barSize + '%')
                     var temp = 'Light is switched on at ' + moment(startTime).format("YYYY-MM-DD HH:mm:ss") + ' for ' + timeSpan + ' Seconds'

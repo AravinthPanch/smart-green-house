@@ -20,7 +20,7 @@
  j = fast Stop!!! (Sensor -> Actuator, Controler) (signal that the critical moist value is reached and the action should be stopped)
  
  
- even the messages are dedicated to specific node we still use broadcast because we do not have a dynamic adressing system
+ even the messages are dedicated to specific node the sensor still use broadcast because we do not have a dynamic adressing system
  
  
  

@@ -59,15 +59,24 @@ function initSerial(socket, port) {
 
         var buffer = '';
         serialPort.on('data', function (data) {
-//            console.log(data.toString())
+            logger.error(data.toString())
             buffer += data.toString();
 
             if (buffer.indexOf('S:') >= 0 && buffer.indexOf(':E') >= 0) {
                 buffer = buffer.match("S:CC:(.*?):E")
-                logger.debug('CC to UI : ' + buffer[0])
-                if (buffer[1] != null) {
-                    emitData(buffer[1], socket)
+
+                var timestamp = moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss.SSS")
+
+                if (buffer != null) {
+                    if (buffer[0] != null) {
+                        logger.debug('CC to UI : ' + buffer[0])
+                    }
+
+                    if (buffer[1] != null) {
+                        emitData(buffer[1], socket, timestamp)
+                    }
                 }
+
                 buffer = ''
             }
         });
@@ -75,8 +84,7 @@ function initSerial(socket, port) {
 }
 
 
-function emitData(packet, socket) {
-    var timestamp = moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss.SSS");
+function emitData(packet, socket, timestamp) {
 
     var data = {
         time: timestamp.toString("%A"),
