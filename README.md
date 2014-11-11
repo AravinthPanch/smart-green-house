@@ -1,4 +1,4 @@
-#Networked Embedded System : Smart Green House
+#Smart Green House
 ##Description
 Smart Green House is a scalable plant monitoring system that helps us to monitor our plants and water them automatically. This system is built using WaspMote and XBee Modules. It includes sensor node, actuator node, control center and Frontend application to visualize the whole monitoring process. Additionally, water reservoir must be established for this system to work. Information about each plant is transmitted wirelessly using IEEE 802.15.4 protocols using XBee modules as underlying hardware.
 
