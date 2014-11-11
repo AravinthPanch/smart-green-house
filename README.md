@@ -1,8 +1,8 @@
 #Networked Embedded System : Smart Green House
 ##Description
-Imagine you are a university student and you live far away from your family. You live in an unknown town and no one cares about you. You have to wash the dishes yourself and you have to take care about your clothes. In addition your mother gave you same very beautiful plants. Now you want to go to your holidays and travel around Europe for some weeks and you have no idea how to pour your very beautiful plants during this time. Your neighbor is not very friendly and your mother lives in another town.... :-(
-Than you need the Smart Green Home for students!
-With the Smart Green Home for Students you can leave your plants alone for several weeks. The Smart Green Home for Students controls the pouring of every plant in your flat perfectly. The pouring works complete automatically and of course wireless.
+Smart Green House is a scalable plant monitoring system that helps us to monitor our plants and water them automatically. This system is built using WaspMote and XBee Modules. It includes sensor node, actuator node, control center and Frontend application to visualize the whole monitoring process. Additionally, water reservoir must be established for this system to work. Information about each plant is transmitted wirelessly using IEEE 802.15.4 protocols using XBee modules as underlying hardware.
+
+This project work is done to demonstrate the advantages of wireless mesh networks WSN using WaspMotes. This has created a basic plant monitoring system and hope to be improved in future using cheaper hardware.
 
 ##Collaborators
 * Alexander Platz
