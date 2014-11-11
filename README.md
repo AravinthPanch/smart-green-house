@@ -4,6 +4,8 @@ Smart Green House is a scalable plant monitoring system that helps us to monitor
 
 This project work is done to demonstrate the advantages of wireless mesh networks WSN using WaspMotes. This has created a basic plant monitoring system and hope to be improved in future using cheaper hardware.
 
+![Smart Green House](https://raw.githubusercontent.com/AravinthPanch/smart-green-house/master/Document/0_Plan/Draft.png "Smart Green House")
+
 ##Collaborators
 * Alexander Platz
 * Aravinth, S. Panchadcharam
@@ -20,6 +22,8 @@ This project work is done to demonstrate the advantages of wireless mesh network
 
 ##User Interface
 It enables the user to control, configure and monitor the status of the Smart Green House. This program is implemented to run platform independently.
+
+![UI](https://raw.githubusercontent.com/AravinthPanch/smart-green-house/master/Document/3_Final/ui.png "UI")
 
 ##Minimum Requirement to run UI
 * Operating System with Web browser that can support Web Sockets (Chrome, Firefox, Safari, IE)
